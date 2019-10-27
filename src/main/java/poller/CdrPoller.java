@@ -1,9 +1,8 @@
 package poller;
 
-import static com.dyngr.core.AttemptResults.*;
+import static com.dyngr.core.AttemptResults.justContinue;
 
 import com.dyngr.core.AttemptMaker;
-import com.dyngr.core.AttemptResults;
 import com.dyngr.core.DefaultPoller;
 import com.dyngr.core.StopStrategies;
 import com.dyngr.core.WaitStrategies;

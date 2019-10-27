@@ -12,6 +12,11 @@ plugins {
     id "java"
     id "org.springframework.boot" version "${springBootVersion}"
 }
+spotless {
+    java {
+        removeUnusedImports()
+    }
+}
 
 group = "com.connexta"
 

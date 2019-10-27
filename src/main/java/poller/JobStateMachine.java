@@ -1,7 +1,5 @@
 package poller;
 
-import java.util.List;
-
 public class JobStateMachine {
 
   JobStatus[] lifecycle;
