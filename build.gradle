@@ -1,0 +1,57 @@
+buildscript {
+    ext {
+        junitJupiterVersion = "5.5.2"
+        lombokVersion = "1.18.10"
+        springBootVersion = "2.1.9.RELEASE"
+        springfoxSwaggerVersion = "2.9.2"
+    }
+}
+
+plugins {
+    id "com.diffplug.gradle.spotless" version "3.25.0"
+    id "java"
+    id "org.springframework.boot" version "${springBootVersion}"
+}
+
+group = "com.connexta"
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+    jcenter()
+}
+
+dependencies {
+    annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
+    compile 'javax.inject:javax.inject:1'
+    compileOnly "org.projectlombok:lombok:${lombokVersion}"
+    implementation 'com.dyngr:polling:1.1.3'
+    implementation "io.springfox:springfox-swagger2:${springfoxSwaggerVersion}"
+    implementation "io.springfox:springfox-swagger-ui:${springfoxSwaggerVersion}"
+    implementation "org.springframework.boot:spring-boot-starter-actuator:${springBootVersion}"
+    implementation "org.springframework.boot:spring-boot-starter-web:${springBootVersion}"
+    testCompile "org.junit.jupiter:junit-jupiter-params:${junitJupiterVersion}"
+    testCompile "org.mockito:mockito-junit-jupiter:3.1.0"
+    testImplementation "org.junit.jupiter:junit-jupiter-api:${junitJupiterVersion}"
+    testImplementation("org.springframework.boot:spring-boot-starter-test:${springBootVersion}") {
+        exclude group: "junit", module: "junit" // excludes JUnit 4
+    }
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${junitJupiterVersion}"
+}
+
+sourceCompatibility = 1.11
+targetCompatibility = 1.11
+
+test {
+    useJUnitPlatform()
+}
+
+
+bootJar {
+    launchScript()
+}
+
+
+task listDependencies(type: DependencyReportTask)
+
+bootRun.dependsOn(build)
