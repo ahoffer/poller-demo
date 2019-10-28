@@ -15,6 +15,5 @@ public class StatusController {
   @GetMapping(value = "/{jobId}")
   public String status(@PathVariable String jobId) {
     return jobs.computeIfAbsent(jobId, jobFactory::next).getCurrentStatus();
-
   }
 }
