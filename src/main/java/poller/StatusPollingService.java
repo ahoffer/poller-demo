@@ -9,8 +9,6 @@ import com.dyngr.PollerBuilder;
 import com.dyngr.core.AttemptMaker;
 import com.dyngr.core.StopStrategies;
 import com.dyngr.core.WaitStrategies;
-import java.util.Collections;
-import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -39,18 +37,7 @@ public class StatusPollingService {
 
   @PreDestroy
   void destroy() {
-    List<Runnable> unfinished = Collections.emptyList();
-    if (executorService != null) {
-      executorService.shutdown();
-      try {
-        if (!executorService.awaitTermination(800, TimeUnit.MILLISECONDS)) {
-          unfinished = executorService.shutdownNow();
-        }
-      } catch (InterruptedException e) {
-        unfinished = executorService.shutdownNow();
-      }
-    }
-    log.info("Stopped Polling service with {} jobs uncompleted", unfinished.size());
+    new StopExecutor().stop(executorService);
   }
 
   AttemptMaker<String> attempt(String jobId) {
@@ -61,7 +48,7 @@ public class StatusPollingService {
       String jobStatus = entity.getBody();
       log.info("Job={} ResponseStatus={} JobStatus={}", jobId, reponseStatus.value(), jobStatus);
       if (COMPLETED.name().equals(jobStatus) || FAILED.name().equals(jobStatus)) {
-        log.info("Polling stopped for job {}", jobId);
+//        log.info("Polling stopped for job {}", jobId);
         return finishWith(jobStatus);
       }
       return justContinue();

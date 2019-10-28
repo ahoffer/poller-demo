@@ -13,7 +13,8 @@ public class StatusController {
   JobFactory jobFactory = new JobFactory();
 
   @GetMapping(value = "/{jobId}")
-  public String status(@PathVariable String jobId) {
+  // Synchronize to avoid concurrent modification exception
+  public synchronized String status(@PathVariable String jobId) {
     return jobs.computeIfAbsent(jobId, jobFactory::next).getCurrentStatus();
   }
 }
