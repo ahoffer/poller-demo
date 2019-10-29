@@ -7,22 +7,22 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-@Component
+@RestController
 @Slf4j
 public class Producer {
-  StatusPollingService pollingService;
+  PollingService pollingService;
   int numberOfSimulatedJobs = 100;
   List<Future<String>> statusFutures;
   private ScheduledExecutorService reportingExecutor;
 
-  @PostConstruct
-  void init() {
-    pollingService = new StatusPollingService();
+  @GetMapping("/start")
+  void start() {
+    pollingService = new PollingService();
     reportingExecutor = Executors.newScheduledThreadPool(1);
     startSimulation();
     startReporting();

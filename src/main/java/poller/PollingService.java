@@ -13,20 +13,24 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
+
+//TODO Create nested Builder class
 
 @Component
 @Slf4j
-public class StatusPollingService {
+public class PollingService {
   ExecutorService executorService;
   RestTemplate restTemplate;
 
-  StatusPollingService() {
+  PollingService() {
     restTemplate = new RestTemplate();
     executorService = Executors.newFixedThreadPool(128);
   }
@@ -41,14 +45,22 @@ public class StatusPollingService {
   }
 
   AttemptMaker<String> attempt(String jobId) {
+    AtomicReference<HttpStatus> reponseStatus = new AtomicReference<>();
+    AtomicReference<String> jobStatusRef = new AtomicReference<>();
     return () -> {
-      ResponseEntity<String> entity =
-          restTemplate.getForEntity("http://localhost:8080/{jobId}", String.class, jobId);
-      HttpStatus reponseStatus = entity.getStatusCode();
-      String jobStatus = entity.getBody();
-      log.info("Job={} ResponseStatus={} JobStatus={}", jobId, reponseStatus.value(), jobStatus);
+      try {
+        ResponseEntity<String> entity =
+            restTemplate.getForEntity("http://localhost:8080/job/{jobId}", String.class, jobId);
+        reponseStatus.set(entity.getStatusCode());
+        jobStatusRef.set(entity.getBody());
+      } catch (HttpStatusCodeException e) {
+        reponseStatus.set(e.getStatusCode());
+        jobStatusRef.set("UNKNOWN");
+      }
+      String jobStatus = jobStatusRef.get();
+      log.info(
+          "Job={} ResponseStatus={} JobStatus={}", jobId, reponseStatus.get().value(), jobStatus);
       if (COMPLETED.name().equals(jobStatus) || FAILED.name().equals(jobStatus)) {
-//        log.info("Polling stopped for job {}", jobId);
         return finishWith(jobStatus);
       }
       return justContinue();

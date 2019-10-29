@@ -2,16 +2,14 @@ package poller;
 
 public class JobStateMachine {
 
-  JobStatus[] lifecycle;
+  static double probabilityOfStateChange = 0.20;
+
+  final JobStatus[] lifecycle;
   int index;
 
-  public JobStateMachine(JobStatus[] lifecycle, double probabilityOfStateChange) {
+  public JobStateMachine(JobStatus[] lifecycle) {
     this.lifecycle = lifecycle;
-    this.probabilityOfStateChange = probabilityOfStateChange;
-    index = 0;
   }
-
-  double probabilityOfStateChange;
 
   JobStatus getStatus() {
     return lifecycle[index];
@@ -23,7 +21,7 @@ public class JobStateMachine {
   }
 
   private void advance(double p) {
-    if (!isFinal() && probabilityOfStateChange > p) {
+    if (!isFinal() && p < probabilityOfStateChange) {
       index++;
     }
   }

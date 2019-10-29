@@ -13,8 +13,8 @@ public class Job {
     this.stateMachine = stateMachine;
   }
 
-  public String getCurrentStatus() {
-    return stateMachine.tryAdvanceAndGet(random.nextDouble()).toString();
+  public JobStatus getCurrentStatus() {
+    return stateMachine.tryAdvanceAndGet(random.nextDouble());
   }
 
   // Use this to clean up the list of jobs and generate some metrics
