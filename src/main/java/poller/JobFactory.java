@@ -14,7 +14,7 @@ public class JobFactory {
   Random random;
   double probabilityFirstStateNotStated = 0.20;
   double probabilityOfFailure = 0.15;
-  double probabilityOfSuccess = 0.80;
+  double probabilityOfSuccess = 0.85;
 
   JobFactory() {
     random = new Random(1);
