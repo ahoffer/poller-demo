@@ -7,6 +7,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,6 +20,12 @@ public class Producer {
   int numberOfSimulatedJobs = 100;
   List<Future<String>> statusFutures;
   private ScheduledExecutorService reportingExecutor;
+
+
+  @PostConstruct
+  void go() {
+    start();
+  }
 
   @GetMapping("/start")
   void start() {

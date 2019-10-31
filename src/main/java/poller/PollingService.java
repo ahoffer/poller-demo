@@ -2,9 +2,6 @@ package poller;
 
 import static com.dyngr.core.AttemptResults.finishWith;
 import static com.dyngr.core.AttemptResults.justContinue;
-import static poller.JobStatus.COMPLETED;
-import static poller.JobStatus.FAILED;
-
 import com.dyngr.PollerBuilder;
 import com.dyngr.core.AttemptMaker;
 import com.dyngr.core.StopStrategies;
@@ -50,7 +47,7 @@ public class PollingService {
     return () -> {
       try {
         ResponseEntity<String> entity =
-            restTemplate.getForEntity("http://localhost:8080/job/{jobId}", String.class, jobId);
+            restTemplate.getForEntity("http://localhost:9090/job/{jobId}", String.class, jobId);
         reponseStatus.set(entity.getStatusCode());
         jobStatusRef.set(entity.getBody());
       } catch (HttpStatusCodeException e) {
@@ -60,7 +57,7 @@ public class PollingService {
       String jobStatus = jobStatusRef.get();
       log.info(
           "Job={} ResponseStatus={} JobStatus={}", jobId, reponseStatus.get().value(), jobStatus);
-      if (COMPLETED.name().equals(jobStatus) || FAILED.name().equals(jobStatus)) {
+      if ("COMPLETED".equals(jobStatus) || "FAILED".equals(jobStatus)) {
         return finishWith(jobStatus);
       }
       return justContinue();
