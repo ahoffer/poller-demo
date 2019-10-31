@@ -3,12 +3,10 @@ package poller;
 import static com.dyngr.core.AttemptResults.finishWith;
 import static com.dyngr.core.AttemptResults.justContinue;
 
+import com.dyngr.core.AttemptMaker;
 import com.dyngr.core.AttemptResult;
 import java.util.List;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -29,7 +27,7 @@ public class Producer {
   PollingService pollingService;
   int numberOfSimulatedJobs = 100;
   List<Future<String>> statusFutures;
-  private ScheduledExecutorService reportingExecutor;
+  JobReport jobReport;
 
   @PostConstruct
   void go() {
@@ -39,17 +37,13 @@ public class Producer {
   @GetMapping("/start")
   void start() {
     pollingService = new PollingService();
-    reportingExecutor = Executors.newScheduledThreadPool(1);
     startSimulation();
     startReporting();
   }
 
   private void startReporting() {
-    reportingExecutor.scheduleAtFixedRate(reportingTask(), 0, 10, TimeUnit.SECONDS);
-  }
-
-  Runnable reportingTask() {
-    return new JobReport().invoke();
+    jobReport = new JobReport(statusFutures);
+    jobReport.startReporting();
   }
 
   private void startSimulation() {
@@ -62,60 +56,38 @@ public class Producer {
             .collect(Collectors.toList());
   }
 
+  // TODO Handle refused connectinx caused by java.net.ConnectException
+  // TODO Handle jobs that never finish
+  Function<RestTemplate, AttemptMaker<String>> attempt(String jobId) {
+    return (restTemplate) -> () -> theFunctionToExecute(jobId, restTemplate);
+  }
 
-  //TODO Handle refused connectinx caused by java.net.ConnectException
-  //TODO Handle jobs that never finish
-  Function<RestTemplate, AttemptResult<String>> attempt(String jobId) {
+  private AttemptResult<String> theFunctionToExecute(String jobId, RestTemplate restTemplate) {
     AtomicReference<HttpStatus> reponseStatus = new AtomicReference<>();
     AtomicReference<String> jobStatusRef = new AtomicReference<>();
-    return (restTemplate) -> {
-      try {
-        ResponseEntity<String> entity =
-            restTemplate.getForEntity("http://localhost:9090/job/{jobId}", String.class, jobId);
-        reponseStatus.set(entity.getStatusCode());
-        jobStatusRef.set(entity.getBody());
-      } catch (HttpStatusCodeException e) {
-        reponseStatus.set(e.getStatusCode());
-        jobStatusRef.set("UNKNOWN");
-      }
-      String jobStatus = jobStatusRef.get();
-      log.info(
-          "Job={} ResponseStatus={} JobStatus={}", jobId, reponseStatus.get().value(), jobStatus);
-      if ("COMPLETED".equals(jobStatus) || "FAILED".equals(jobStatus)) {
-        return finishWith(jobStatus);
-      }
-      return justContinue();
-    };
+    try {
+      ResponseEntity<String> entity =
+          restTemplate.getForEntity("http://localhost:9000/job/{jobId}", String.class, jobId);
+      reponseStatus.set(entity.getStatusCode());
+      jobStatusRef.set(entity.getBody());
+    } catch (HttpStatusCodeException e) {
+      reponseStatus.set(e.getStatusCode());
+      jobStatusRef.set("UNKNOWN");
+    }
+    String jobStatus = jobStatusRef.get();
+    log.info(
+        "Job={} ResponseStatus={} JobStatus={}", jobId, reponseStatus.get().value(), jobStatus);
+    if ("COMPLETED".equals(jobStatus) || "FAILED".equals(jobStatus)) {
+      return finishWith(jobStatus);
+    }
+    return justContinue();
   }
 
   @PreDestroy
   void destroy() {
     log.info("ENDING SIMULATION");
-    stopReporting();
-  }
-
-  private void stopReporting() {
-    new StopExecutor().stop(reportingExecutor);
-  }
-
-  private class JobReport {
-
-    public Runnable invoke() {
-      return () -> {
-        long finished = statusFutures.stream().filter(Future::isDone).count();
-        long cancelled = statusFutures.stream().filter(Future::isCancelled).count();
-        long notDone = numberOfSimulatedJobs - finished - cancelled;
-        if (notDone > 0) {
-          log.info(
-              "Summary {} jobs are finished, {} jobs are cancelled, {} jobs are not done",
-              finished,
-              cancelled,
-              notDone);
-        } else {
-          log.info("All jobs are finished!");
-          stopReporting();
-        }
-      };
+    if (jobReport != null) {
+      jobReport.stopReporting();
     }
   }
 }

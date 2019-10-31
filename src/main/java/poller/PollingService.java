@@ -2,7 +2,6 @@ package poller;
 
 import com.dyngr.PollerBuilder;
 import com.dyngr.core.AttemptMaker;
-import com.dyngr.core.AttemptResult;
 import com.dyngr.core.StopStrategies;
 import com.dyngr.core.WaitStrategies;
 import java.util.concurrent.ExecutorService;
@@ -20,22 +19,22 @@ import org.springframework.web.client.RestTemplate;
 @Component
 @Slf4j
 public class PollingService {
+
+  private final int corePoolSize;
   ExecutorService executorService;
   RestTemplate restTemplate;
 
-  PollingService() {
+  public PollingService() {
+    super();
     restTemplate = new RestTemplate();
-    executorService = Executors.newFixedThreadPool(128);
+    corePoolSize = 128;
+    executorService = Executors.newFixedThreadPool(corePoolSize);
   }
 
-  //  public Future<String> pollForStatus(String jobId) {
-  //    return newPollerBuilder().polling(attempt(jobId)).build().start();
-  //  }
-
-  public <T> Future<T> poll(Function<RestTemplate, AttemptResult<T>> supplierFunction) {
+  public <T> Future<T> poll(Function<RestTemplate, AttemptMaker<T>> supplierFunction) {
 
     return newPollerBuilder()
-        .polling((AttemptMaker<T>) supplierFunction.apply(restTemplate))
+        .polling(supplierFunction.apply(restTemplate))
         .build()
         .start();
   }
