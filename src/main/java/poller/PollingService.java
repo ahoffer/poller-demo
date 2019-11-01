@@ -8,11 +8,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
 import javax.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
 
 // TODO Create nested Builder class
 
@@ -22,21 +20,26 @@ public class PollingService {
 
   private final int corePoolSize;
   ExecutorService executorService;
-  RestTemplate restTemplate;
+  private int giveUpAfter;
 
   public PollingService() {
     super();
-    restTemplate = new RestTemplate();
     corePoolSize = 128;
     executorService = Executors.newFixedThreadPool(corePoolSize);
+    giveUpAfter = 30;
   }
 
-  public <T> Future<T> poll(Function<RestTemplate, AttemptMaker<T>> supplierFunction) {
+  public <T> Future<T> poll(AttemptMaker<T> pollingTask)  {
 
-    return newPollerBuilder()
-        .polling(supplierFunction.apply(restTemplate))
-        .build()
-        .start();
+    try {
+      return newPollerBuilder()
+          .polling(pollingTask)
+          .build()
+          .start();
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+    return null;
   }
 
   @PreDestroy
@@ -49,6 +52,6 @@ public class PollingService {
         .withExecutorService(executorService)
         .stopIfException(false)
         .withWaitStrategy(WaitStrategies.fixedWait(1, TimeUnit.SECONDS))
-        .withStopStrategy(StopStrategies.stopAfterAttempt(100));
+        .withStopStrategy(StopStrategies.stopAfterDelay(giveUpAfter, TimeUnit.SECONDS));
   }
 }

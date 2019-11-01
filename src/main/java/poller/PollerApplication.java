@@ -1,14 +1,19 @@
 package poller;
 
+import org.springframework.boot.Banner.Mode;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.context.ConfigurableApplicationContext;
 
 @SpringBootApplication
 public class PollerApplication {
 
+  public static void main(String[] args) {
 
-	public static void main(String[] args) {
-		SpringApplication.run(PollerApplication.class, args);
-	}
-
+    new SpringApplicationBuilder(PollerApplication.class)
+        .logStartupInfo(false)
+        .bannerMode(Mode.OFF)
+        .run(args);
+  }
 }
