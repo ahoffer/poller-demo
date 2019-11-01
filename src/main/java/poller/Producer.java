@@ -21,7 +21,12 @@ public class Producer {
 
   @PostConstruct
   void go() {
+    resetSimulatedEndpoint();
     start();
+  }
+
+  private void resetSimulatedEndpoint() {
+    restTemplate.delete("http://localhost:9500/job");
   }
 
   public Producer() {

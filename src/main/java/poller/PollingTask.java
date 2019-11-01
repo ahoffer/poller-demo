@@ -28,17 +28,15 @@ public class PollingTask<T> implements AttemptMaker<T> {
   @Override
   public AttemptResult process() {
     HttpStatus reponseStatus = null;
-    String jobStatus = null;
+    String jobStatus = "UNKNOWN";
     String uriTemplate = "http://localhost:9500/job/{jobId}";
     try {
       ResponseEntity<String> entity = restTemplate.getForEntity(uriTemplate, String.class, jobId);
       reponseStatus = entity.getStatusCode();
       jobStatus = entity.getBody();
     } catch (HttpStatusCodeException e) {
-      reponseStatus = e.getStatusCode();
 
-      // Set the return value from this polling attempt
-      jobStatus = "UNKNOWN";
+      reponseStatus = e.getStatusCode();
 
     } catch (ResourceAccessException e) {
       resourceAccessException(uriTemplate, e);
