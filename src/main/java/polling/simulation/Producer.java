@@ -23,6 +23,7 @@ public class Producer {
   Reporter reporter;
   RestTemplate restTemplate;
 
+  // Start simulation
   @PostConstruct
   void go() {
     start();
