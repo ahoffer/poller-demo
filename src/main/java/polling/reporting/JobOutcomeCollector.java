@@ -1,4 +1,4 @@
-package poller;
+package polling.reporting;
 
 import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.counting;
@@ -29,10 +29,13 @@ class JobOutcomeCollector {
   }
 
   public Map<String, Long> get() {
-    return tasks.stream()
-        .map(this::saferGet)
-        .filter(Objects::nonNull)
-        .collect(groupingBy(identity(), counting()));
+    Map<String, Long> map =
+        tasks.stream()
+            .map(this::saferGet)
+            .filter(Objects::nonNull)
+            .collect(groupingBy(identity(), counting()));
+    map.put("UNKNOWN", tasks.size() - map.values().stream().mapToLong(Long::valueOf).sum());
+    return map;
   }
 
   protected String saferGet(Future<String> future) {

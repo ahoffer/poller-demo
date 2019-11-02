@@ -1,4 +1,4 @@
-package poller;
+package polling.simulation;
 
 import java.util.List;
 import java.util.concurrent.Future;
@@ -8,7 +8,11 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
+import polling.reporting.Reporter;
+import polling.service.PollingService;
+import polling.service.PollingTask;
 
 @Slf4j
 @Service
@@ -21,12 +25,15 @@ public class Producer {
 
   @PostConstruct
   void go() {
-    resetSimulatedEndpoint();
     start();
   }
 
   private void resetSimulatedEndpoint() {
-    restTemplate.delete("http://localhost:9500/job");
+    try {
+      restTemplate.delete("http://localhost:9500/job");
+    } catch (ResourceAccessException e) {
+      log.warn("Unable to contact status endpoint to delete jobs. Is the endpoing running?");
+    }
   }
 
   public Producer() {
@@ -36,6 +43,7 @@ public class Producer {
   }
 
   void start() {
+    resetSimulatedEndpoint();
     startSimulation();
     startReporting();
   }

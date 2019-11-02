@@ -1,4 +1,4 @@
-package poller;
+package polling.common;
 
 import java.util.Collections;
 import java.util.List;
@@ -25,7 +25,7 @@ public class StopExecutor {
         unfinished = executorService.shutdownNow();
       }
     }
-    log.info("Stopped excutor service with {} tasks uncompleted", unfinished.size());
+    log.info("Stopped excutor polling.service with {} tasks uncompleted", unfinished.size());
     return unfinished;
   }
 }

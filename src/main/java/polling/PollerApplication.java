@@ -1,4 +1,4 @@
-package poller;
+package polling;
 
 import org.springframework.boot.Banner.Mode;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

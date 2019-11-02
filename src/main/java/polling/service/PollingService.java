@@ -1,4 +1,4 @@
-package poller;
+package polling.service;
 
 import com.dyngr.PollerBuilder;
 import com.dyngr.core.AttemptMaker;
@@ -10,11 +10,10 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
+import polling.common.StopExecutor;
 
-// TODO Create nested Builder class
-
-@Component
+@Service
 @Slf4j
 public class PollingService {
 
@@ -26,7 +25,7 @@ public class PollingService {
     super();
     corePoolSize = 128;
     executorService = Executors.newFixedThreadPool(corePoolSize);
-    giveUpAfter = 30;
+    giveUpAfter = 20;
   }
 
   public <T> Future<T> poll(AttemptMaker<T> pollingTask)  {

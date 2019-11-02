@@ -1,4 +1,4 @@
-package poller;
+package polling.reporting;
 
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -6,9 +6,10 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
+import polling.common.StopExecutor;
 
 @Slf4j
-class Reporter {
+public class Reporter {
 
   private final List<Future<String>> tasks;
   private final int delayBeforeFirstReport;
@@ -31,13 +32,16 @@ class Reporter {
   }
 
   public void report() {
+
     TaskOutcomeCollector taskOutcomes = new TaskOutcomeCollector(tasks);
-    if (taskOutcomes.numNotDone() > 0) {
-      log.info("Local polling tasks {}", taskOutcomes.get());
-    } else {
-      log.info("All jobs are finished!");
+    log.info("Remote jobs {}", new JobOutcomeCollector(tasks).get());
+
+    //     This information no longer seems important
+    //    log.info("Local polling tasks {}", taskOutcomes.get());
+
+    if (taskOutcomes.numNotDone() <= 0) {
+      log.info("All polling taks have quit");
       stopReporting();
     }
-    log.info("Remote jobs {}", new JobOutcomeCollector(tasks).get());
   }
 }

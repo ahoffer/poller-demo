@@ -1,4 +1,4 @@
-package poller;
+package polling.service;
 
 import static com.dyngr.core.AttemptResults.continueFor;
 import static com.dyngr.core.AttemptResults.finishWith;
@@ -25,8 +25,12 @@ public class PollingTask<T> implements AttemptMaker<T> {
     this.jobId = jobId;
   }
 
+  /**
+   * Here are the guts of the polling job.
+   * @return
+   */
   @Override
-  public AttemptResult process() {
+  public AttemptResult<T> process() {
     HttpStatus reponseStatus = null;
     String jobStatus = "UNKNOWN";
     String uriTemplate = "http://localhost:9500/job/{jobId}";
@@ -48,7 +52,7 @@ public class PollingTask<T> implements AttemptMaker<T> {
     if (isJobComplete(jobStatus)) {
 
       // Stop polling
-      return finishWith(jobStatus);
+      return (AttemptResult<T>) finishWith(jobStatus);
     }
 
     // Job not done, keep polling
