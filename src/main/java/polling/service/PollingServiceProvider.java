@@ -14,6 +14,12 @@ import org.springframework.stereotype.Service;
 import polling.common.StopExecutor;
 import polling.interfaces.PollingService;
 
+/**
+ * This is class is meant to be instantiated as a Bean, Component, or Service. The class's
+ * responsibilities are to manage the settings for polling and kick off new polling tasks. Other
+ * responsibilities include settings the wait and retry behavior. It also creates and configures the
+ * executor, and ensures that it is shutdown properly.
+ */
 @Service
 @Slf4j
 public class PollingServiceProvider implements PollingService {
@@ -30,13 +36,10 @@ public class PollingServiceProvider implements PollingService {
   }
 
   @Override
-  public <T> Future<T> poll(AttemptMaker<T> pollingTask)  {
+  public <T> Future<T> poll(AttemptMaker<T> pollingTask) {
 
     try {
-      return builder()
-          .polling(pollingTask)
-          .build()
-          .start();
+      return builder().polling(pollingTask).build().start();
     } catch (Exception e) {
       e.printStackTrace();
     }
@@ -48,8 +51,7 @@ public class PollingServiceProvider implements PollingService {
     new StopExecutor().stop(executorService);
   }
 
-
-   PollerBuilder builder() {
+  PollerBuilder builder() {
     return PollerBuilder.newBuilder()
         .withExecutorService(executorService)
         .stopIfException(false)
