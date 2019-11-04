@@ -8,7 +8,6 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
 public class PollerApplication {
 
   public static void main(String[] args) {
-
     new SpringApplicationBuilder(PollerApplication.class)
         .logStartupInfo(false)
         .bannerMode(Mode.OFF)

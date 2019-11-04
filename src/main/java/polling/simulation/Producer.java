@@ -10,14 +10,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
-import polling.reporting.Reporter;
-import polling.service.PollingService;
+import polling.service.PollingServiceProvider;
 import polling.service.PollingTask;
+import polling.reporting.Reporter;
 
 @Slf4j
 @Service
 public class Producer {
-  PollingService pollingService;
+  PollingServiceProvider pollingService;
   int numberOfSimulatedJobs;
   List<Future<String>> statusFutures;
   Reporter reporter;
@@ -38,7 +38,7 @@ public class Producer {
   }
 
   public Producer() {
-    this.pollingService = new PollingService();
+    this.pollingService = new PollingServiceProvider();
     restTemplate = new RestTemplate();
     numberOfSimulatedJobs = 100;
   }

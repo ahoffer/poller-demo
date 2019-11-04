@@ -12,26 +12,28 @@ import javax.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import polling.common.StopExecutor;
+import polling.interfaces.PollingService;
 
 @Service
 @Slf4j
-public class PollingService {
+public class PollingServiceProvider implements PollingService {
 
   private final int corePoolSize;
   ExecutorService executorService;
   private int giveUpAfter;
 
-  public PollingService() {
+  public PollingServiceProvider() {
     super();
     corePoolSize = 128;
     executorService = Executors.newFixedThreadPool(corePoolSize);
     giveUpAfter = 20;
   }
 
+  @Override
   public <T> Future<T> poll(AttemptMaker<T> pollingTask)  {
 
     try {
-      return newPollerBuilder()
+      return builder()
           .polling(pollingTask)
           .build()
           .start();
@@ -46,7 +48,8 @@ public class PollingService {
     new StopExecutor().stop(executorService);
   }
 
-  PollerBuilder newPollerBuilder() {
+
+   PollerBuilder builder() {
     return PollerBuilder.newBuilder()
         .withExecutorService(executorService)
         .stopIfException(false)
