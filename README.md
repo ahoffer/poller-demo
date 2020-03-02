@@ -1,3 +1,6 @@
+<img scr="desccale2.png"/>
+
+
 ### Demonstration of a Polling Service.
 
 This Spring application is built on top of 
