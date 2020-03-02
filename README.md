@@ -1,5 +1,6 @@
-<img scr="desccale2.png"/>
-
+<img src="desccale2.png" width="200"/>
+<img src="desccale2.png" width="100"/>
+<img src="desccale2.png" width="50"/>
 
 ### Demonstration of a Polling Service.
 
